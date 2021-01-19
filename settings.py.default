@@ -1,0 +1,132 @@
+TOKEN = '5j39z53pctbj5dhe8ws7q38rrqbjtjt465jlozirol8tvsrall45e88d5721umuvoylh7upxj1lsjepjn73gg'
+
+GROUP_ID = '855261653'
+
+INTENTS = [
+    {
+        "name": "Сценарий заказа билетов",
+        "tokens": ("/ticket", "заказать билет"),
+        "scenario": "booking_a_ticket",
+        "answer": None
+    },
+    {
+        "name": "Справка о том, как работает робот",
+        "tokens": ("/help", "помощь", "что ты умеешь", "привет"),
+        "scenario": None,
+        "answer": "Здравствуйте! Я - бот-помощник по заказу авиабилетов. На данный момент доступно авиаобращение между"
+                  "городами Москва, Санкт-Петербург, Анапа и Норильск.\n Отправьте мне /ticket, если хотите заказать "
+                  "билет"
+    }
+]
+
+SCENARIOS = {
+    "booking_a_ticket": {
+        "first_step": "step1",
+        "steps": {
+            "step1": {
+                "text": "Вы сообщили, что хотите заказать билет. Для этого нужно выполнить несколько шагов. \n"
+                        "Для начала введите город отправления",
+                "failure_text": "Для данного города нет авиабилетов. Для большей информации используйте /help",
+                "handler": "handler_departure",
+                "next_step": "step2"
+            },
+            "step2": {
+                "text": "Отлично! А теперь введите город назначения",
+                "failure_text": "Город не принят по причине: {cause}",
+                "handler": "handler_arrival",
+                "next_step": "step3"
+            },
+            "step3": {
+                "text": "Введите дату в формате ДД-ММ-ГГГГ, например 01-05-2019",
+                "failure_text": "Указан неверный формат! Попробуйте ещё раз",
+                "handler": "dispatcher",
+                "next_step": "step4"
+            },
+            "step4": {
+                "text": "Близжайшие рейсы по данному направлению представлены ниже. Введите номер рейса, "
+                        "который вам подходит:\n "
+                        "1 - {appropriate_flights[0]}\n"
+                        "2 - {appropriate_flights[1]}\n"
+                        "3 - {appropriate_flights[2]}\n"
+                        "4 - {appropriate_flights[3]}\n"
+                        "5 - {appropriate_flights[4]}",
+                "failure_text": "Указан неверный номер рейса! Введите число от 1 до 5",
+                "handler": "handler_flight",
+                "next_step": "step5"
+            },
+            "step5": {
+                "text": "Укажите необходимое количество мест. Максимальное значение - 5",
+                "failure_text": "Указано неверное количесто мест! Введите число от 1 до 5",
+                "handler": "handler_places",
+                "next_step": "step6"
+            },
+            "step6": {
+                "text": "При необходимости оставьте комментарий к заказу в произвольной форме",
+                "failure_text": "-",
+                "handler": "handler_comment",
+                "next_step": "step7"
+            },
+            "step7": {
+                "text": "Уточните введенные данные.\nГород отправления: {departure}\nГород назначения: "
+                        "{arrival}\nВыбранные вами дата и время отправления: {time_of_flight}. Комментарий: {comment}\n"
+                        "Всё ли верно? Да/Нет",
+                "failure_text": "Отправьте 'да' - если данные верны и 'нет', если данные не верны!",
+                "handler": "handler_subtotals",
+                "next_step": "step_is_ok"
+            },
+            "step_is_ok": {
+                "text": "Хотите попробовать ещё раз?",
+                "failure_text": "Отправьте 'да' - если хотите начать заново",
+                "handler": "handler_try_again",
+                "next_step": "step8"
+            },
+            "step8": {
+                "text": "Введите ваш номер телефона для связи",
+                "failure_text": "Номер указан неверно! Попробуйте ещё раз",
+                "handler": "handler_phone",
+                "next_step": "step9"
+            },
+            "step9": {
+                "text": "Спасибо за обращение! В ближайшее время с вами свяжутся по номеру {phone}",
+                "image": "generate_ticket_handler",
+                "failure_text": None,
+                "handler": None,
+                "next_step": None
+            }
+        }
+    }
+}
+
+
+ticket = {
+    "Msc": {
+        "Spb": [],  # по вт и чт в 16:00
+        "Anapa": [],  # с 1 апреля по 1 октября 1, 15 и 27 числа в 15:00
+        "Norilsk": []  # 15 числа каждого мес  10:45
+    },
+    "Spb": {
+        "Msc": [],  # по пн и ср в 10:00
+        "Anapa": [],  # с 1 апреля по 1 октября 15, 25 числа в 14:00
+        "Norilsk": []  # 17 числа каждого мес  20:45
+    },
+    "Anapa": {
+        "Msc": [],  # с 1 апреля по 1 октября 1, 15 и 27 числа в 10:00
+        "Spb": [],  # с 1 апреля по 1 октября 5, 20 числа в 8:00
+        # "Norilsk": {}
+    },
+    "Norilsk": {
+        "Msc": [],  # 15 числа каждого мес  5:45
+        "Spb": [],  # 17 числа каждого мес  15:45
+        # "Anapa": {}
+    }
+}
+
+DEFAULT_ANSWER = INTENTS[1]['answer']
+
+DB_CONFIG = dict(
+    provider='postgres',
+    user='postgres',
+    password='123123',
+    host='localhost',
+    database='vk_chat_bot'
+)
